@@ -23,14 +23,19 @@ if d2 == ??? or d2 < ???:
 ```
 
 ## Challenge 3 — Veer left at 10cm
-python# Detect obstacle at 10cm and veer left slightly
-### HINT: how do you make the robot veer without a full turn?
+
+```Detect obstacle at 10cm and veer left slightly
+HINT: how do you make the robot veer without a full turn?```
+
+```
 if d == 0 or d < ???:
     motor(0, 0, ???)    # left motor slower
     motor(1, 0, ???)    # right motor faster
     sleep(???)          # how long to veer 20 degrees?
+```
 
 ##Challenge 4 — Wait, wonder, then rotate
+
 ``` Stop, show ? for 5 seconds, rotate right 10% then continue```
 #### HINT: how do you show a custom character on the display?
 ```
