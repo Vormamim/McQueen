@@ -1,11 +1,8 @@
 from microbit import *
 from machine import time_pulse_us
-import neopixel
 
 i2c.init(freq=100000, sda=pin20, scl=pin19)
 sleep(500)
-
-np = neopixel.NeoPixel(pin15, 4)
 
 def motor(m, direction, speed):
     try:
@@ -28,14 +25,18 @@ def turn_left(speed=180):
 def turn_right(speed=180):
     motor(0, 0, speed); motor(1, 1, speed)
 
-def distance_cm():
+def distance_cm(): # this calibrates the robot. It's all about voltage adjustment, dont stress
+    pin2.read_digital()            # force pulldown
     pin1.write_digital(0)
-    sleep(1)
+    sleep(5)
     pin1.write_digital(1)
-    sleep(1)
+    sleep(10)
     pin1.write_digital(0)
-    t = time_pulse_us(pin1, 1, 50000)
-    return t / 58 if t > 0 else 999
+    sleep(5)
+    t = time_pulse_us(pin2, 1, 50000)
+    if t < 10:
+        return 0                   # obstacle
+    return t / 58
 
 def line_left():
     return pin13.read_digital()    # 0=black, 1=white
@@ -43,25 +44,16 @@ def line_left():
 def line_right():
     return pin14.read_digital()    # 0=black, 1=white
 
-def leds(r, g, b):
-    np.fill((r, g, b)); np.show()
-
-def leds_off():
-    np.fill((0, 0, 0)); np.show()
-
-# ── OBSTACLE AVOIDANCE ───────────────────────────────
+# ── YOUR CODE BELOW ───────────────────────────────────
 while True:
     d = distance_cm()
-    display.scroll(str(int(d)))    # shows distance on LED matrix
+    print("distance:", d)
 
-    if d < 20:                     # obstacle closer than 20cm
+    if d == 0 or d < 30:
         stop()
-        leds(255, 0, 0)            # red = danger
-        sleep(300)
-        turn_right()               # turn away
-        sleep(500)
+        display.show(Image.NO)
+        sleep(100)
     else:
         forward()
-        leds(0, 255, 0)            # green = all clear
-    
-    sleep(100)
+        display.show(Image.ARROW_N)
+        sleep(1000)
