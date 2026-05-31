@@ -1,3 +1,17 @@
+/* ── Card accent colours (one per lesson) ────────────────── */
+const CARD_COLORS = [
+  '#6e6cf7', // L1  purple
+  '#4fc3f7', // L2  cyan
+  '#3dd68c', // L3  green
+  '#f59e0b', // L4  amber
+  '#f472b6', // L5  pink
+  '#38bdf8', // L6  sky
+  '#a78bfa', // L7  violet
+  '#34d399', // L8  emerald
+  '#fb923c', // L9  orange
+  '#e879f9', // extension fuchsia
+];
+
 /* ── Helpers ─────────────────────────────────────────────── */
 
 function esc(str) {
@@ -10,6 +24,7 @@ function esc(str) {
 function codeBlock(code) {
   return `
     <div class="code-wrapper">
+      <div class="code-label">python</div>
       <button class="copy-btn">Copy</button>
       <pre class="language-python"><code class="language-python">${esc(code)}</code></pre>
     </div>`;
@@ -26,7 +41,7 @@ function editableTable(table) {
   }).join('');
   return `
     <div class="experiment-table-wrapper">
-      <p class="experiment-note">Use your notebook to record results — this page does not save anything.</p>
+      <p class="experiment-note">not saved — use your notebook to keep a permanent record</p>
       <table class="ui celled compact small table">
         <thead><tr>${heads}</tr></thead>
         <tbody>${rows}</tbody>
@@ -36,50 +51,58 @@ function editableTable(table) {
 
 function bulletList(items) {
   const lis = items.map(i => `<li>${i}</li>`).join('');
-  return `<ul class="ui list" style="margin:0.5rem 0 0.5rem 1rem">${lis}</ul>`;
+  return `<ul class="ui list" style="margin:0.5rem 0 0.4rem 0.8rem">${lis}</ul>`;
 }
 
 function hintMsg(text) {
-  return `<div class="ui yellow message"><i class="lightbulb icon"></i> ${text}</div>`;
+  return `<div class="msg msg-hint"><i class="lightbulb icon"></i><div>${text}</div></div>`;
 }
 
 function challengeMsg(text) {
-  return `<div class="ui orange message challenge-block"><i class="star icon"></i> <strong>Challenge:</strong> ${text}</div>`;
+  return `<div class="msg msg-challenge"><i class="bolt icon"></i><div><strong>Challenge —</strong> ${text}</div></div>`;
 }
 
 function infoMsg(text) {
-  return `<div class="ui blue message"><i class="info circle icon"></i> ${text}</div>`;
+  return `<div class="msg msg-info"><i class="info circle icon"></i><div>${text}</div></div>`;
 }
 
 function warningMsg(text) {
-  return `<div class="ui red message"><i class="exclamation triangle icon"></i> ${text}</div>`;
+  return `<div class="msg msg-warning"><i class="exclamation triangle icon"></i><div>${text}</div></div>`;
+}
+
+function noCodingMsg(text) {
+  return `<div class="msg msg-nocode"><i class="pencil alternate icon"></i><div>${text}</div></div>`;
 }
 
 function hardwareBadges(hw) {
-  return hw.map(h => `<div class="ui tiny label"><i class="wrench icon"></i>${h}</div>`).join(' ');
+  return hw.map(h => `<span class="hw-badge"><i class="microchip icon"></i>${h}</span>`).join('');
+}
+
+function timeBadge(mins) {
+  return `<span class="time-badge"><i class="clock icon"></i>${mins} min</span>`;
 }
 
 function renderTask(task, index) {
   let html = `<div class="task-step">`;
-  html += `<div class="task-step-title">
-    <span class="task-num">${index + 1}</span>
-    ${task.title}
+  html += `<div class="task-step-header">
+    <span class="task-badge">Task ${index + 1}</span>
+    <span class="task-title">${task.title}</span>
   </div>`;
   if (task.description) html += `<p>${task.description}</p>`;
   if (task.code)        html += codeBlock(task.code);
   if (task.bullets)     html += bulletList(task.bullets);
   if (task.table)       html += editableTable(task.table);
-  if (task.note)        html += `<div class="ui message"><i class="info circle icon"></i>${task.note}</div>`;
+  if (task.note)        html += infoMsg(task.note);
   if (task.hint)        html += hintMsg(task.hint);
   html += `</div>`;
   return html;
 }
 
-function keyQuestionsAccordion(questions) {
+function keyQuestionsBlock(questions) {
   if (!questions || questions.length === 0) return '';
   const items = questions.map(q => `
     <div class="title"><i class="dropdown icon"></i>${q}</div>
-    <div class="content"><p><em>Discuss with your class or write your answer in your notebook.</em></p></div>
+    <div class="content"><p>Discuss with your class or write your answer in your notebook.</p></div>
   `).join('');
   return `
     <div class="section-block key-questions">
@@ -91,72 +114,89 @@ function keyQuestionsAccordion(questions) {
 function lessonNavFooter(lesson) {
   const prev = lesson.number > 1
     ? `<a class="ui left labeled icon button" href="#lesson-${lesson.number - 1}">
-         <i class="left arrow icon"></i> Lesson ${lesson.number - 1}
+         <i class="left arrow icon"></i>Lesson ${lesson.number - 1}
        </a>`
-    : `<div></div>`;
+    : `<a class="ui left labeled icon button" href="#home">
+         <i class="left arrow icon"></i>Course Home
+       </a>`;
 
   const isLast = lesson.number === LESSONS.length;
   const next = isLast
-    ? `<a class="ui right labeled icon primary button" href="#extension">
-         Extension <i class="right arrow icon"></i>
+    ? `<a class="ui right labeled icon violet button" href="#extension">
+         Extension<i class="right arrow icon"></i>
        </a>`
-    : `<a class="ui right labeled icon primary button" href="#lesson-${lesson.number + 1}">
-         Lesson ${lesson.number + 1} <i class="right arrow icon"></i>
+    : `<a class="ui right labeled icon violet button" href="#lesson-${lesson.number + 1}">
+         Lesson ${lesson.number + 1}<i class="right arrow icon"></i>
        </a>`;
 
   return `<div class="lesson-nav-footer">${prev}${next}</div>`;
 }
 
-/* ── Page renderers ──────────────────────────────────────── */
+/* ── Home page ───────────────────────────────────────────── */
 
 function renderHome() {
-  const cards = LESSONS.map(l => `
-    <a class="lesson-card" href="#${l.id}">
-      <div class="card-number">Lesson ${l.number} · ${l.time} min</div>
+  const cards = LESSONS.map((l, i) => `
+    <a class="lesson-card" href="#${l.id}" style="--card-accent:${CARD_COLORS[i]}">
+      <div class="card-bg-num">${String(l.number).padStart(2,'0')}</div>
+      <div class="card-label">Lesson ${l.number} &middot; ${l.time} min</div>
       <h3>${l.title}</h3>
       <div class="card-topic">${l.topic}</div>
-      <div class="card-meta">${l.hardware.slice(0, 2).join(' · ')}</div>
-    </a>
-  `).join('');
+    </a>`).join('');
 
-  const extensionCard = `
-    <a class="lesson-card" href="#extension">
-      <div class="card-number">Extension · 45 min</div>
+  const extCard = `
+    <a class="lesson-card" href="#extension" style="--card-accent:${CARD_COLORS[9]}">
+      <div class="card-bg-num">EX</div>
+      <div class="card-label">Extension &middot; 45 min</div>
       <h3>Data Logging</h3>
       <div class="card-topic">Data persistence, CSV, file systems</div>
-      <div class="card-meta">micro:bit V1 or V2</div>
     </a>`;
 
   const hwRows = HARDWARE.map(r =>
     `<tr>
-      <td>${r.component}</td>
+      <td><strong>${r.component}</strong></td>
       <td><span class="pin-badge">${r.pin}</span></td>
       <td>${r.notes}</td>
-    </tr>`
-  ).join('');
+    </tr>`).join('');
 
   const currRows = CURRICULUM.map(r =>
-    `<tr><td>${r.lesson}</td><td>${r.concepts}</td></tr>`
-  ).join('');
+    `<tr><td>${r.lesson}</td><td>${r.concepts}</td></tr>`).join('');
 
   return `
-    <div class="course-hero">
-      <h1><i class="microchip icon"></i> Maqueen Robotics — Unit 5</h1>
-      <div class="subtitle">DFRobot Maqueen v4.1 · micro:bit V1 &amp; V2 · MicroPython · Stage 4 (Year 7 / 8)</div>
-      <p>This unit builds toward a single goal: drive a robot along a wall, detect a gap, turn into it, and drive through — with increasing reliability across nine lessons.</p>
-      <div style="margin-top:0.8rem">
-        <a class="ui primary button" href="#lesson-1"><i class="play icon"></i> Start Lesson 1</a>
-        <a class="ui button" href="#hardware"><i class="microchip icon"></i> Hardware Reference</a>
-        <a class="ui button" href="#base-code"><i class="code icon"></i> Base Code</a>
+    <div class="hero">
+      <div class="hero-eyebrow">DFRobot Maqueen v4.1 &nbsp;&middot;&nbsp; micro:bit MicroPython &nbsp;&middot;&nbsp; Stage 4</div>
+      <h1>Maqueen<br><span>Robotics</span></h1>
+      <p class="hero-desc">Nine lessons building toward one goal: a robot that drives along a wall, finds the gap, and navigates through it — on its own.</p>
+      <div class="hero-actions">
+        <a class="ui large violet button" href="#lesson-1"><i class="play icon"></i>Start Lesson 1</a>
+        <a class="ui large basic inverted button" href="#hardware">Hardware Ref</a>
+        <a class="ui large basic inverted button" href="#base-code">Base Code</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="stat-val">9</span>
+          <span class="stat-label">Lessons</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">4</span>
+          <span class="stat-label">Challenges</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">45</span>
+          <span class="stat-label">Min avg</span>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-val">1</span>
+          <span class="stat-label">Final challenge</span>
+        </div>
       </div>
     </div>
 
-    <div class="lesson-cards">${cards}${extensionCard}</div>
+    <div class="lesson-grid">${cards}${extCard}</div>
 
     <div class="section-block">
       <h2>Curriculum Links</h2>
-      <table class="ui celled compact small table curriculum-table">
-        <thead><tr><th>Lesson</th><th>Computing concepts</th></tr></thead>
+      <table class="ui compact small table curriculum-table">
+        <thead><tr><th>Lesson</th><th>Computing Concepts</th></tr></thead>
         <tbody>${currRows}</tbody>
       </table>
     </div>
@@ -167,9 +207,11 @@ function renderHome() {
         <thead><tr><th>Component</th><th>Pin</th><th>Notes</th></tr></thead>
         <tbody>${hwRows}</tbody>
       </table>
-      ${warningMsg('Always keep <code>i2c.init(freq=100000, sda=pin20, scl=pin19)</code> in your code even when not using motors — it is required for the ultrasonic sensor pins to work correctly.')}
+      ${warningMsg('Always include <code>i2c.init(freq=100000, sda=pin20, scl=pin19)</code> in every program — even when not using motors. The ultrasonic sensor needs it.')}
     </div>`;
 }
+
+/* ── Hardware reference ──────────────────────────────────── */
 
 function renderHardware() {
   const rows = HARDWARE.map(r =>
@@ -177,23 +219,22 @@ function renderHardware() {
       <td><strong>${r.component}</strong></td>
       <td><span class="pin-badge">${r.pin}</span></td>
       <td>${r.notes}</td>
-    </tr>`
-  ).join('');
+    </tr>`).join('');
 
   return `
-    <div class="lesson-header">
-      <h1><i class="microchip icon"></i> Hardware Reference</h1>
-      <p>DFRobot Maqueen v4.1 · micro:bit V1 &amp; V2</p>
+    <div class="lesson-header" style="display:block;padding:1.5rem 0 1.8rem">
+      <div class="lesson-eyebrow">Reference</div>
+      <h1 style="font-size:2rem;font-weight:900;color:var(--white);margin:0.2rem 0 0.5rem;letter-spacing:-0.02em">Hardware Reference</h1>
+      <p style="color:var(--text-dim);font-size:0.9rem">DFRobot Maqueen v4.1 &middot; micro:bit V1 &amp; V2</p>
     </div>
 
     <div class="section-block">
+      <h2>Pin Map</h2>
       <table class="ui celled table">
-        <thead>
-          <tr><th>Component</th><th>Pin</th><th>Notes</th></tr>
-        </thead>
+        <thead><tr><th>Component</th><th>Pin</th><th>Notes</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      ${warningMsg('Always keep <code>i2c.init(freq=100000, sda=pin20, scl=pin19)</code> in your code even when not using motors — it is required for the ultrasonic sensor pins to work correctly.')}
+      ${warningMsg('Always include <code>i2c.init(freq=100000, sda=pin20, scl=pin19)</code> in every program — even when not using motors.')}
       ${infoMsg('Servo S1 and S2 share pins P1/P2 with the ultrasonic sensor. Do not use both at the same time.')}
     </div>
 
@@ -202,37 +243,34 @@ function renderHardware() {
       <table class="ui celled compact small table">
         <thead><tr><th>direction argument</th><th>Motor behaviour</th></tr></thead>
         <tbody>
-          <tr><td><code>0</code></td><td>Forward</td></tr>
-          <tr><td><code>1</code></td><td>Backward</td></tr>
+          <tr><td><span class="pin-badge">0</span></td><td>Forward</td></tr>
+          <tr><td><span class="pin-badge">1</span></td><td>Backward</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="section-block">
-      <h2>Ultrasonic Sensor Notes</h2>
-      <ul class="ui list" style="margin-left:1rem">
-        <li>Returns approximately <strong>0</strong> when an obstacle is touching or very close</li>
-        <li>Returns approximately <strong>210</strong> or higher when no obstacle is within range</li>
-        <li>Maximum reliable range is roughly 200–300 cm depending on surface</li>
-        <li>Soft or angled surfaces may give unreliable readings</li>
-      </ul>
-    </div>
-
-    <div class="section-block">
-      <h2>IR Line Sensor Notes</h2>
-      <ul class="ui list" style="margin-left:1rem">
-        <li><code>0</code> = black (line detected)</li>
-        <li><code>1</code> = white (no line)</li>
-        <li>Sensors are P13 (left) and P14 (right)</li>
-      </ul>
+      <h2>Sensor Return Values</h2>
+      <table class="ui celled compact small table">
+        <thead><tr><th>Sensor</th><th>Value</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Ultrasonic</td><td><span class="pin-badge">0</span></td><td>Obstacle touching or very close</td></tr>
+          <tr><td>Ultrasonic</td><td><span class="pin-badge">210+</span></td><td>No obstacle in range</td></tr>
+          <tr><td>IR Line</td><td><span class="pin-badge">0</span></td><td>Black (line detected)</td></tr>
+          <tr><td>IR Line</td><td><span class="pin-badge">1</span></td><td>White (no line)</td></tr>
+        </tbody>
+      </table>
     </div>`;
 }
 
+/* ── Base code ───────────────────────────────────────────── */
+
 function renderBaseCode() {
   return `
-    <div class="lesson-header">
-      <h1><i class="code icon"></i> Base Code</h1>
-      <p>Copy this into every lesson as the starting point. Add your code only in the <strong>YOUR CODE BELOW</strong> section.</p>
+    <div class="lesson-header" style="display:block;padding:1.5rem 0 1.8rem">
+      <div class="lesson-eyebrow">Reference</div>
+      <h1 style="font-size:2rem;font-weight:900;color:var(--white);margin:0.2rem 0 0.5rem;letter-spacing:-0.02em">Base Code</h1>
+      <p style="color:var(--text-dim);font-size:0.9rem">Copy this into every lesson. Add your code only below the <code>YOUR CODE BELOW</code> line.</p>
     </div>
 
     <div class="section-block">
@@ -244,90 +282,97 @@ function renderBaseCode() {
       <table class="ui celled compact small table">
         <thead><tr><th>Function</th><th>What it does</th></tr></thead>
         <tbody>
-          <tr><td><code>forward(speed=200)</code></td><td>Drive both motors forward at the given speed (0–255)</td></tr>
-          <tr><td><code>backward(speed=200)</code></td><td>Drive both motors backward</td></tr>
-          <tr><td><code>turn_left(speed=180)</code></td><td>Left motor backward, right motor forward</td></tr>
-          <tr><td><code>turn_right(speed=180)</code></td><td>Left motor forward, right motor backward</td></tr>
-          <tr><td><code>stop()</code></td><td>Set both motors to speed 0</td></tr>
-          <tr><td><code>distance_cm()</code></td><td>Returns ultrasonic distance in cm (0 = obstacle)</td></tr>
-          <tr><td><code>line_left()</code></td><td>Returns 0 (black) or 1 (white) for left IR sensor</td></tr>
-          <tr><td><code>line_right()</code></td><td>Returns 0 (black) or 1 (white) for right IR sensor</td></tr>
-          <tr><td><code>log(label, value)</code></td><td>Print a labelled value to the serial monitor</td></tr>
-          <tr><td><code>motor(m, direction, speed)</code></td><td>Control one motor directly (m=0 left, m=1 right)</td></tr>
+          <tr><td><code>forward(speed=200)</code></td><td>Both motors forward, speed 0–255</td></tr>
+          <tr><td><code>backward(speed=200)</code></td><td>Both motors backward</td></tr>
+          <tr><td><code>turn_left(speed=180)</code></td><td>Left backward, right forward</td></tr>
+          <tr><td><code>turn_right(speed=180)</code></td><td>Left forward, right backward</td></tr>
+          <tr><td><code>stop()</code></td><td>Both motors off</td></tr>
+          <tr><td><code>distance_cm()</code></td><td>Ultrasonic distance in cm (0 = obstacle)</td></tr>
+          <tr><td><code>line_left()</code></td><td>0 = black, 1 = white (left IR sensor)</td></tr>
+          <tr><td><code>line_right()</code></td><td>0 = black, 1 = white (right IR sensor)</td></tr>
+          <tr><td><code>log(label, value)</code></td><td>Print a labelled value to serial monitor</td></tr>
+          <tr><td><code>motor(m, direction, speed)</code></td><td>One motor directly — m=0 left, m=1 right</td></tr>
         </tbody>
       </table>
     </div>`;
 }
 
+/* ── Individual lesson ───────────────────────────────────── */
+
 function renderLesson(lesson) {
+  const colorIdx = lesson.number - 1;
+  const accent = CARD_COLORS[colorIdx] || '#6e6cf7';
   let html = '';
 
   // Header
+  const numStr = String(lesson.number).padStart(2, '0');
   html += `
-    <div class="lesson-header">
-      <h1>Lesson ${lesson.number} — ${lesson.title}</h1>
-      <div><em>${lesson.topic}</em></div>
-      <div class="meta-row">
-        <div class="ui label"><i class="clock icon"></i> ${lesson.time} min</div>
-        ${hardwareBadges(lesson.hardware)}
+    <div class="lesson-header" style="border-bottom:1px solid var(--border);padding:1.5rem 0 1.8rem;margin-bottom:1.4rem;display:flex;align-items:flex-start;gap:1.4rem">
+      <div class="lesson-num-display" style="color:${accent}">${numStr}</div>
+      <div class="lesson-header-text">
+        <div class="lesson-eyebrow" style="color:${accent}">Lesson ${lesson.number} &middot; ${lesson.topic}</div>
+        <h1 style="font-size:2rem;font-weight:900;color:var(--white);margin:0.25rem 0 0.6rem;letter-spacing:-0.02em;line-height:1.1">${lesson.title}</h1>
+        <div class="meta-row">
+          ${timeBadge(lesson.time)}
+          ${hardwareBadges(lesson.hardware)}
+        </div>
       </div>
     </div>`;
 
   // No-coding notice
   if (lesson.noCodingNote) {
-    html += infoMsg(`<strong>${lesson.noCodingNote}</strong>`);
+    html += noCodingMsg(lesson.noCodingNote);
   }
 
   // Objectives
   html += `
     <div class="section-block">
       <h2>Learning Objectives</h2>
-      <ul class="ui list" style="margin-left:1rem">
-        ${lesson.objectives.map(o => `<li><i class="check circle outline icon" style="color:#21ba45"></i>${o}</li>`).join('')}
+      <ul class="ui list" style="margin-left:0.8rem">
+        ${lesson.objectives.map(o =>
+          `<li><i class="check circle icon" style="color:var(--green)"></i>${o}</li>`
+        ).join('')}
       </ul>
     </div>`;
 
   // Starter
   html += `
     <div class="section-block">
-      <h2>Starter Discussion</h2>
-      <div class="ui blue message"><i class="comments icon"></i> ${lesson.starter}</div>
+      <h2>Starter</h2>
+      ${infoMsg(`<i class="comments icon"></i> ${lesson.starter}`)}
     </div>`;
 
   // Assessment (lesson 9)
   if (lesson.isAssessment && lesson.assessment) {
     const a = lesson.assessment;
     const criteriaRows = a.criteria.map(c =>
-      `<tr><td>${c.label}</td><td style="text-align:center">${c.marks}</td></tr>`
+      `<tr><td>${c.label}</td><td style="text-align:center;font-variant-numeric:tabular-nums">${c.marks}</td></tr>`
     ).join('');
     const bonusItems = a.bonus.map(b =>
-      `<li class="bonus-item">${b}</li>`
+      `<li class="bonus-item"><i class="star icon"></i>${b}</li>`
     ).join('');
     html += `
       <div class="section-block">
         <h2>Assessment Criteria</h2>
         <table class="ui celled table">
-          <thead><tr><th>Criteria</th><th style="text-align:center">Marks</th></tr></thead>
+          <thead><tr><th>Criteria</th><th style="text-align:center;width:80px">Marks</th></tr></thead>
           <tbody>
             ${criteriaRows}
             <tr class="assessment-total">
-              <td>Total</td>
-              <td style="text-align:center">${a.total}</td>
+              <td>Total</td><td style="text-align:center">10</td>
             </tr>
           </tbody>
         </table>
-        <h3>Bonus Marks</h3>
-        <ul class="ui list" style="margin-left:1rem">${bonusItems}</ul>
+        <h2 style="margin-top:1.2rem">Bonus Marks</h2>
+        <ul class="ui list" style="margin-left:0.8rem">${bonusItems}</ul>
       </div>`;
   }
 
   // Tasks
   if (lesson.tasks && lesson.tasks.length > 0) {
-    html += `<div class="section-block"><h2>Tasks</h2>`;
-    lesson.tasks.forEach((task, i) => {
-      html += renderTask(task, i);
-    });
-    html += `</div>`;
+    html += `<div class="section-block"><h2>Tasks</h2><div class="tasks-list">`;
+    lesson.tasks.forEach((task, i) => { html += renderTask(task, i); });
+    html += `</div></div>`;
   }
 
   // Challenge
@@ -336,7 +381,7 @@ function renderLesson(lesson) {
   }
 
   // Key questions
-  html += keyQuestionsAccordion(lesson.keyQuestions);
+  html += keyQuestionsBlock(lesson.keyQuestions);
 
   // Nav footer
   html += lessonNavFooter(lesson);
@@ -344,36 +389,43 @@ function renderLesson(lesson) {
   return html;
 }
 
+/* ── Extension lesson ────────────────────────────────────── */
+
 function renderExtension() {
   const ext = EXTENSION;
   let html = '';
 
   html += `
-    <div class="lesson-header">
-      <h1><i class="database icon"></i> Extension — Data Logging</h1>
-      <div><em>${ext.topic}</em></div>
-      <div class="meta-row">
-        <div class="ui label"><i class="clock icon"></i> ${ext.time} min</div>
-        ${hardwareBadges(ext.hardware)}
+    <div class="lesson-header" style="display:flex;align-items:flex-start;gap:1.4rem;border-bottom:1px solid var(--border);padding:1.5rem 0 1.8rem;margin-bottom:1.4rem">
+      <div class="lesson-num-display" style="color:${CARD_COLORS[9]};font-size:3rem">EX</div>
+      <div>
+        <div class="lesson-eyebrow" style="color:${CARD_COLORS[9]}">Extension &middot; ${ext.topic}</div>
+        <h1 style="font-size:2rem;font-weight:900;color:var(--white);margin:0.25rem 0 0.6rem;letter-spacing:-0.02em">Data Logging</h1>
+        <div class="meta-row">
+          ${timeBadge(ext.time)}
+          ${hardwareBadges(ext.hardware)}
+        </div>
       </div>
     </div>`;
 
   html += `
     <div class="section-block">
       <h2>Learning Objectives</h2>
-      <ul class="ui list" style="margin-left:1rem">
-        ${ext.objectives.map(o => `<li><i class="check circle outline icon" style="color:#21ba45"></i>${o}</li>`).join('')}
+      <ul class="ui list" style="margin-left:0.8rem">
+        ${ext.objectives.map(o =>
+          `<li><i class="check circle icon" style="color:var(--green)"></i>${o}</li>`
+        ).join('')}
       </ul>
     </div>`;
 
-  // V1 vs V2 comparison
+  // V1 vs V2
   const compRows = ext.comparisonTable.rows.map(r =>
-    `<tr>${r.map((c, i) => `<td${i === 0 ? ' style="font-weight:600"' : ''}>${c}</td>`).join('')}</tr>`
+    `<tr>${r.map((c, i) => `<td${i === 0 ? ' style="font-weight:700"' : ''}>${c}</td>`).join('')}</tr>`
   ).join('');
 
   html += `
     <div class="section-block">
-      <h2>V1 vs V2 — What's the Difference?</h2>
+      <h2>V1 vs V2</h2>
       <table class="ui celled compact small table">
         <thead><tr>${ext.comparisonTable.headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
         <tbody>${compRows}</tbody>
@@ -383,52 +435,58 @@ function renderExtension() {
   html += `
     <div class="section-block">
       <h2>V1 — Button Dump Method</h2>
-      <p>Data is held in memory during the run. Press <strong>Button A</strong> to dump to serial at the end. Data is lost when the micro:bit is unplugged.</p>
+      <p>Data is held in RAM during the run. Press <strong>Button A</strong> to dump to serial. Data is lost when the board loses power.</p>
       ${codeBlock(ext.v1Code)}
     </div>`;
 
   html += `
     <div class="section-block">
       <h2>V2 — File Storage Method</h2>
-      <p>Data is saved to a CSV file on the micro:bit. Survives power off. Can be read back at any time. Button A dumps to serial; Button B clears the log file.</p>
+      <p>Data is written to <code>log.csv</code> on the micro:bit's flash storage. Survives power off. Open in Excel or Google Sheets.</p>
+      <p>Button A dumps to serial &nbsp;&middot;&nbsp; Button B clears the log file.</p>
       ${codeBlock(ext.v2Code)}
     </div>`;
 
-  const extQs = ext.extensionQuestions.map(q => `
+  const extQItems = ext.extensionQuestions.map(q => `
     <div class="title"><i class="dropdown icon"></i>${q}</div>
-    <div class="content"><p><em>Discuss with your class or write your answer in your notebook.</em></p></div>
+    <div class="content"><p>Discuss with your class or write your answer in your notebook.</p></div>
   `).join('');
 
   html += `
     <div class="section-block key-questions">
       <h2>Extension Questions</h2>
-      <div class="ui accordion">${extQs}</div>
+      <div class="ui accordion">${extQItems}</div>
     </div>`;
 
   html += `
     <div class="lesson-nav-footer">
       <a class="ui left labeled icon button" href="#lesson-9">
-        <i class="left arrow icon"></i> Lesson 9
+        <i class="left arrow icon"></i>Lesson 9
       </a>
-      <a class="ui right labeled icon primary button" href="#challenges">
-        Movement Challenges <i class="right arrow icon"></i>
+      <a class="ui right labeled icon violet button" href="#challenges">
+        Movement Challenges<i class="right arrow icon"></i>
       </a>
     </div>`;
 
   return html;
 }
 
+/* ── Movement challenges ─────────────────────────────────── */
+
 function renderChallenges() {
   let html = `
-    <div class="lesson-header">
-      <h1><i class="puzzle piece icon"></i> Movement Challenges</h1>
-      <p>Four incomplete code snippets for Lesson 4 and beyond. Fill in the <span class="placeholder">???</span> values and integrate each into the base code.</p>
+    <div class="lesson-header" style="display:block;padding:1.5rem 0 1.8rem;border-bottom:1px solid var(--border);margin-bottom:1.4rem">
+      <div class="lesson-eyebrow">Lesson 4 and beyond</div>
+      <h1 style="font-size:2rem;font-weight:900;color:var(--white);margin:0.25rem 0 0.5rem;letter-spacing:-0.02em">Movement Challenges</h1>
+      <p style="color:var(--text-dim);font-size:0.9rem">Four incomplete code snippets. Fill in the <span class="placeholder">???</span> values, work out where each goes in the base code, and test it.</p>
     </div>`;
 
-  CHALLENGES.forEach(ch => {
+  const chColors = ['#6e6cf7','#f59e0b','#3dd68c','#f472b6'];
+
+  CHALLENGES.forEach((ch, i) => {
     html += `
-      <div class="section-block">
-        <h2>Challenge ${ch.number} — ${ch.title}</h2>
+      <div class="section-block" style="border-top:3px solid ${chColors[i]}">
+        <h2 class="with-bar" style="border-left-color:${chColors[i]}">Challenge ${ch.number} — ${ch.title}</h2>
         <p>${ch.description}</p>
         ${codeBlock(ch.code)}
         ${hintMsg(ch.hint)}
@@ -438,17 +496,17 @@ function renderChallenges() {
   html += `
     <div class="lesson-nav-footer">
       <a class="ui left labeled icon button" href="#extension">
-        <i class="left arrow icon"></i> Extension
+        <i class="left arrow icon"></i>Extension
       </a>
-      <a class="ui right labeled icon primary button" href="#home">
-        Course Home <i class="home icon"></i>
+      <a class="ui right labeled icon violet button" href="#home">
+        Course Home<i class="home icon"></i>
       </a>
     </div>`;
 
   return html;
 }
 
-/* ── Post-render hooks ───────────────────────────────────── */
+/* ── Post-render ─────────────────────────────────────────── */
 
 function highlightPlaceholders() {
   document.querySelectorAll('code.language-python').forEach(block => {
@@ -548,17 +606,13 @@ function route() {
     }
   }
 
-  if (!html) html = renderHome();
+  contentArea.innerHTML = html || renderHome();
 
-  contentArea.innerHTML = html;
-
-  // Post-render
   Prism.highlightAll();
   highlightPlaceholders();
   setupCopyButtons();
   setupAccordions();
 
-  // Scroll main content to top
   document.getElementById('main-content').scrollTop = 0;
   window.scrollTo(0, 0);
 }
@@ -572,15 +626,11 @@ function initMobileSidebar() {
     $('.ui.sidebar').sidebar('toggle');
   });
 
-  // Close sidebar when a link is clicked
   $('#mobile-sidebar').on('click', 'a.item', () => {
     $('.ui.sidebar').sidebar('hide');
   });
 
-  $('.ui.sidebar').sidebar({
-    dimPage: true,
-    closable: true,
-  });
+  $('.ui.sidebar').sidebar({ dimPage: true, closable: true });
 }
 
 /* ── Init ────────────────────────────────────────────────── */
