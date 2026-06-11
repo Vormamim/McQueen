@@ -1,6 +1,7 @@
 from microbit import *
+# Servo requires GOOD battery to work well.
 
-# Initialize Maqueen Plus V2 communication
+# Initialise Maqueen Plus V2 communication
 i2c.init(freq=100000, sda=pin20, scl=pin19)
 
 while True:
