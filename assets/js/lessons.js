@@ -44,51 +44,51 @@ i2c.init(freq=100000, sda=pin20, scl=pin19)
 sleep(500)
 
 def motor(m, direction, speed):
-    try:
-        i2c.write(0x10, bytearray([0x00 if m == 0 else 0x02, direction, speed]))
-    except:
-        pass
+  try:
+    i2c.write(0x10, bytearray([0x00 if m == 0 else 0x02, direction, speed]))
+  except:
+    pass
 
 def stop():
-    motor(0, 0, 0); motor(1, 0, 0)
+  motor(0, 0, 0); motor(1, 0, 0)
 
 def forward(speed=200):
-    motor(0, 0, speed); motor(1, 0, speed)
+  motor(0, 0, speed); motor(1, 0, speed)
 
 def backward(speed=200):
-    motor(0, 1, speed); motor(1, 1, speed)
+  motor(0, 1, speed); motor(1, 1, speed)
 
 def turn_left(speed=180):
-    motor(0, 1, speed); motor(1, 0, speed)
+  motor(0, 1, speed); motor(1, 0, speed)
 
 def turn_right(speed=180):
-    motor(0, 0, speed); motor(1, 1, speed)
+  motor(0, 0, speed); motor(1, 1, speed)
 
 def distance_cm():
-    pin2.read_digital()
-    pin1.write_digital(0)
-    sleep(5)
-    pin1.write_digital(1)
-    sleep(10)
-    pin1.write_digital(0)
-    sleep(5)
-    t = time_pulse_us(pin2, 1, 50000)
-    if t < 10:
-        return 0
-    return t / 58
+  pin2.read_digital()
+  pin1.write_digital(0)
+  sleep(5)
+  pin1.write_digital(1)
+  sleep(10)
+  pin1.write_digital(0)
+  sleep(5)
+  t = time_pulse_us(pin2, 1, 50000)
+  if t < 10:
+    return 0
+  return t / 58
 
 def line_left():
-    return pin13.read_digital()    # 0=black, 1=white
+  return pin13.read_digital()    # 0=black, 1=white
 
 def line_right():
-    return pin14.read_digital()    # 0=black, 1=white
+  return pin14.read_digital()    # 0=black, 1=white
 
 def log(label, value):
-    print(label + ": " + str(value))
+  print(label + ": " + str(value))
 
 # ── YOUR CODE BELOW ───────────────────────────────────
 while True:
-    pass`;
+  pass`;
 
 /* ── Lessons ─────────────────────────────────────────────── */
 
@@ -170,39 +170,39 @@ const LESSONS = [
         title: 'Static Test Code',
         description: 'No motors needed for this lesson. Flash this code and open the <strong>Serial</strong> button in the editor to see live values.',
         code: `from microbit import *
-from machine import time_pulse_us
+    from machine import time_pulse_us
 
-i2c.init(freq=100000, sda=pin20, scl=pin19)
-sleep(500)
+    i2c.init(freq=100000, sda=pin20, scl=pin19)
+    sleep(500)
 
-def distance_cm():
-    pin2.read_digital()
-    pin1.write_digital(0)
-    sleep(5)
-    pin1.write_digital(1)
-    sleep(10)
-    pin1.write_digital(0)
-    sleep(5)
-    t = time_pulse_us(pin2, 1, 50000)
-    if t < 10:
+    def distance_cm():
+      pin2.read_digital()
+      pin1.write_digital(0)
+      sleep(5)
+      pin1.write_digital(1)
+      sleep(10)
+      pin1.write_digital(0)
+      sleep(5)
+      t = time_pulse_us(pin2, 1, 50000)
+      if t < 10:
         return 0
-    return t / 58
+      return t / 58
 
-def line_left():
-    return pin13.read_digital()
+    def line_left():
+      return pin13.read_digital()
 
-def line_right():
-    return pin14.read_digital()
+    def line_right():
+      return pin14.read_digital()
 
-def log(label, value):
-    print(label + ": " + str(value))
+    def log(label, value):
+      print(label + ": " + str(value))
 
-while True:
-    log("distance", int(distance_cm()))
-    log("line_left", line_left())
-    log("line_right", line_right())
-    print("---")
-    sleep(500)`,
+    while True:
+      log("distance", int(distance_cm()))
+      log("line_left", line_left())
+      log("line_right", line_right())
+      print("---")
+      sleep(500)`,
       },
       {
         title: 'Task 1 — Ultrasonic Experiments',
@@ -272,17 +272,20 @@ while True:
       {
         title: 'Task 1 — Stop on Detection',
         description: 'Add this to the base code and test it. Does it stop reliably?',
-        code: `while True:
-    d = distance_cm()
+        code: `from motors import *
+    from ultrasonic_mod import distance_cm
 
-    if d == 0 or d < 30:
+    while True:
+      d = distance_cm()
+
+      if d == 0 or d < 30:
         stop()
         display.show(Image.NO)
-    else:
+      else:
         forward()
         display.show(Image.ARROW_N)
 
-    sleep(100)`,
+      sleep(100)`,
       },
       {
         title: 'Task 2 — Threshold Experiments',
@@ -339,19 +342,19 @@ while True:
         title: 'Task 1 — Stop and Turn',
         description: 'After stopping, add a turn. Does the turn feel like 90 degrees? Adjust <code>sleep(500)</code> until it is close to 90 degrees.',
         code: `while True:
-    d = distance_cm()
+      d = distance_cm()
 
-    if d == 0 or d < 30:
+      if d == 0 or d < 30:
         stop()
         display.show(Image.NO)
         sleep(300)
         turn_right()
         sleep(500)
-    else:
+      else:
         forward()
         display.show(Image.ARROW_N)
 
-    sleep(100)`,
+      sleep(100)`,
       },
       {
         title: 'Task 2 — Calibrate Your Turn',

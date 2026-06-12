@@ -60,5 +60,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
   <script src="assets/js/lessons.js"></script>
   <script src="assets/js/app.js"></script>
+  <!-- File preview modal (Semantic UI) -->
+  <div class="ui modal file-preview-modal">
+    <i class="close icon"></i>
+    <div class="header">Preview</div>
+    <div class="content">
+      <div class="ui segment" style="padding:0">
+        <pre class="language-python" style="margin:0"><code class="language-python">loading...</code></pre>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="ui tiny basic button download-action" href="#" download aria-label="Download file">Download</a>
+      <button class="ui tiny primary button modal-copy">Copy</button>
+      <div class="ui cancel button">Close</div>
+    </div>
+  </div>
 </body>
 </html>

@@ -578,6 +578,27 @@ code {
   color: var(--white);
 }
 
+/* File preview modal line numbers */
+.file-preview-content {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.file-preview-content .ln-numbers {
+  padding: 12px 8px;
+  background: #0b0d12;
+  color: #6b6f86;
+  border-right: 1px solid rgba(255,255,255,0.02);
+  text-align: right;
+  user-select: none;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.file-preview-content .ln-numbers span { display: block; padding: 0 6px; }
+.file-preview-content pre.language-python { margin: 0; padding: 12px; overflow: auto; max-height: 60vh; background: #0d0f1a !important; }
+.ui.modal.file-preview-modal .header { font-family: var(--mono); font-weight:700; }
+
 .placeholder {
   color: #f59e0b;
   font-weight: 800;

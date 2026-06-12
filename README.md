@@ -49,6 +49,41 @@ MovementChallenges.md           — challenge snippet source
 
 ---
 
+## Build Order & Verify
+
+These lessons run as single MicroPython files on the micro:bit editor (python.microbit.org) or other MicroPython IDEs. Students should paste the full code for each lesson into the editor and flash one file at a time — there are no multi-file imports required for classroom use.
+
+Quick verification checklist (teacher-facing):
+
+- Power & wiring: batteries installed in Maqueen, USB cable connected for flashing/serial. Confirm ultrasonic TRIG→P1 and ECHO→P2; IR sensors on P13/P14.
+- Serial Monitor: open the editor's Serial/REPL view when checking sensor outputs.
+
+Recommended flash order and expected outputs:
+
+1. `ultrasonic.py` (Lesson 2 — Sensing)
+  - Flash and open Serial. Expect repeated lines like `distance: <n>` where `<n>` is centimetres.
+  - Checks: Touching the sensor → small number or 0; 10 cm / 30 cm / 50 cm produce increasing values; no obstacle often returns 0 or a large value depending on sensor.
+
+2. `irLineDetection.py` (Lesson 2 — Line sensors)
+  - Flash and observe the 5×5 display and Serial. Expect lines `L: <0|1> | R: <0|1>`.
+  - Checks: Place white paper under both sensors → `1 1` and display `W`. Black under both → `0 0` and display `B`. Mixed → `-`.
+
+3. `sensorDistanceGoStop.py` (Lesson 3 / cumulative behaviour)
+  - Flash with batteries connected (motors require battery power). Observe motors and display.
+  - Expected behaviour: robot drives forward when clear, shows an arrow; when obstacle within the threshold it shows `NO` and stops. If the file contains a 50 cm threshold, test at ~50 cm.
+
+Troubleshooting hints:
+
+- If `distance` reads `0` constantly: check Echo wiring and that pin2 pull configuration is present in the script (some examples set pin2 pull explicitly).
+- If motors do not move: confirm battery pack is connected and motor wiring on Maqueen is intact; try `forward()`/`stop()` short tests.
+- If readings are noisy, power cycle the micro:bit and re-open Serial.
+
+Classroom notes:
+
+- Keep each solution as one file — students should step through the logic in the editor and flash the single-file solution for each lesson.
+- Do not require students to manage multiple Python modules on the device; instructor materials may include helper files in the repo for reference only.
+
+
 ## Hardware Required
 
 | Item                   | Notes                                                 |

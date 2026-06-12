@@ -274,7 +274,15 @@ function renderBaseCode() {
     </div>
 
     <div class="section-block">
-      ${codeBlock(BASE_CODE)}
+        ${codeBlock(BASE_CODE)}
+        <div class="download-files" style="margin-top:1rem">
+          <h3 style="margin:0 0 0.5rem 0">Lesson Files</h3>
+          <p style="margin:0 0 0.6rem 0;color:var(--text-dim)">Download the single-file solutions to paste into the MicroPython editor.</p>
+          <a class="ui tiny basic inverted button preview-btn" href="sensorDistanceGoStop.py" download aria-label="Download sensorDistanceGoStop.py">Download sensorDistanceGoStop.py</a>
+          <a class="ui tiny basic inverted button preview-btn" href="ultrasonic.py" download aria-label="Download ultrasonic.py">Download ultrasonic.py</a>
+          <a class="ui tiny basic inverted button preview-btn" href="irLineDetection.py" download aria-label="Download irLineDetection.py">Download irLineDetection.py</a>
+          <div style="margin-top:0.6rem;color:var(--text-dim)"><small>Instructor reference helper files are available in the repository but are not required for students.</small></div>
+        </div>
     </div>
 
     <div class="section-block">
@@ -317,6 +325,14 @@ function renderLesson(lesson) {
           ${hardwareBadges(lesson.hardware)}
         </div>
       </div>
+    </div>`;
+
+  // Lesson download toolbar (single-file solutions)
+  html += `
+    <div class="lesson-download-toolbar" style="margin:0.6rem 0 1rem 0">
+      <a class="ui mini basic inverted button preview-btn" href="sensorDistanceGoStop.py" download aria-label="Download sensorDistanceGoStop.py">Download sensorDistanceGoStop.py</a>
+      <a class="ui mini basic inverted button preview-btn" href="ultrasonic.py" download aria-label="Download ultrasonic.py">Download ultrasonic.py</a>
+      <a class="ui mini basic inverted button preview-btn" href="irLineDetection.py" download aria-label="Download irLineDetection.py">Download irLineDetection.py</a>
     </div>`;
 
   // No-coding notice
@@ -536,6 +552,67 @@ function setupAccordions() {
   $('.ui.accordion').accordion({ exclusive: false });
 }
 
+function setupPreviewModal() {
+  document.querySelectorAll('.preview-btn').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const href = btn.getAttribute('href');
+      const modal = document.querySelector('.file-preview-modal');
+      const codeEl = modal.querySelector('code');
+      const header = modal.querySelector('.header');
+      const downloadLink = modal.querySelector('.download-action');
+
+      header.textContent = 'Preview — ' + href;
+      downloadLink.setAttribute('href', href);
+      downloadLink.setAttribute('download', '');
+      codeEl.textContent = 'Loading...';
+      Prism.highlightElement(codeEl);
+
+      fetch(href).then(r => {
+        if (!r.ok) throw new Error('Not found');
+        return r.text();
+      }).then(text => {
+        // Use Prism to highlight full text, then render with line numbers
+        const highlighted = Prism.highlight(text, Prism.languages.python, 'python');
+        const lines = text.split('\n');
+        const nums = lines.map((_, i) => `<span>${i+1}</span>`).join('');
+        const contentHtml = `
+          <div class="file-preview-content">
+            <div class="ln-numbers" aria-hidden="true">${nums}</div>
+            <pre class="language-python"><code class="language-python">${highlighted}</code></pre>
+          </div>`;
+        modal.querySelector('.content').innerHTML = contentHtml;
+        $('.ui.modal.file-preview-modal').modal('show');
+      }).catch(() => {
+        const errText = '# Unable to load file';
+        const highlighted = Prism.highlight(errText, Prism.languages.python, 'python');
+        const nums = '<span>1</span>';
+        const contentHtml = `
+          <div class="file-preview-content">
+            <div class="ln-numbers" aria-hidden="true">${nums}</div>
+            <pre class="language-python"><code class="language-python">${highlighted}</code></pre>
+          </div>`;
+        modal.querySelector('.content').innerHTML = contentHtml;
+        $('.ui.modal.file-preview-modal').modal('show');
+      });
+    });
+  });
+
+  // modal copy button
+  document.addEventListener('click', (ev) => {
+    if (ev.target && ev.target.classList && ev.target.classList.contains('modal-copy')) {
+      const code = document.querySelector('.file-preview-modal code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        ev.target.textContent = 'Copied';
+        setTimeout(() => { ev.target.textContent = 'Copy'; }, 1500);
+      }).catch(() => {
+        ev.target.textContent = 'Error';
+        setTimeout(() => { ev.target.textContent = 'Copy'; }, 1500);
+      });
+    }
+  });
+}
+
 /* ── Navigation ──────────────────────────────────────────── */
 
 function buildNavItems(containerId) {
@@ -611,6 +688,7 @@ function route() {
   Prism.highlightAll();
   highlightPlaceholders();
   setupCopyButtons();
+  setupPreviewModal();
   setupAccordions();
 
   document.getElementById('main-content').scrollTop = 0;
